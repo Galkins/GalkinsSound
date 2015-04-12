@@ -1,10 +1,35 @@
 public class Sound {
 
-	static Clip clip;
-	static FloatControl control;
-	static String soundStr;
+	String sound;
+	float volume;
+	
+	Clip clip;
+	FloatControl control;
+	
+	public Sound(URL sound, int volumeValue) {
+		this.sound = sound.toString();
+		this.volume = (float)volumeValue;
+	}
+	
+	public Sound(File sound, int volumeValue) {
+		this.sound = sound.toString();
+		this.volume = (float)volumeValue;
+	}
 
-	public static void play(URL sound, final int volumeValue)
+	public void play()
+			throws MalformedURLException, UnsupportedAudioFileException,
+			IOException, LineUnavailableException {
+		AudioInputStream ais = AudioSystem.getAudioInputStream(new URL(sound));
+		clip = AudioSystem.getClip();
+
+		clip.open(ais);
+		control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+		control.setValue(getVolume());
+		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
+		clip.start();
+	}
+
+	public void play(File sound)
 			throws MalformedURLException, UnsupportedAudioFileException,
 			IOException, LineUnavailableException {
 		AudioInputStream ais = AudioSystem.getAudioInputStream(sound);
@@ -12,78 +37,57 @@ public class Sound {
 
 		clip.open(ais);
 		control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-		control.setValue(getVolume(volumeValue));
+		control.setValue(getVolume());
 		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
 		clip.start();
-
-		soundStr = sound.toString();
 	}
 
-	public static void play(File sound, final int volumeValue)
-			throws MalformedURLException, UnsupportedAudioFileException,
-			IOException, LineUnavailableException {
-		AudioInputStream ais = AudioSystem.getAudioInputStream(sound);
-		clip = AudioSystem.getClip();
-
-		clip.open(ais);
-		control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-		control.setValue(getVolume(volumeValue));
-		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
-		clip.start();
-
-		soundStr = sound.toString();
-	}
-
-	public static void stop() {
+	public void stop() {
 		clip.stop();
 	}
 
-	public static void pause() {
+	public void pause() {
 		clip.stop();
 	}
 
-	public static void resume(int volumeValue) {
+	public void resume() {
 		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
 		clip.start();
 	}
 
-	public static void mute() {
+	public void mute() {
 		control.setValue(-80f);
 	}
 
-	public static void updateVolume(final int volumeValue) {
+	public void updateVolume() {
 		try {
 			Thread.sleep(1);
-			control.setValue(getVolume(volumeValue));
+			control.setValue(getVolume());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static float getVolume(int volumeValue) {
-		float volume = (float) (20 * (Math.log10(volumeValue * 0.01)));
-		return volume;
+	public float getVolume() {
+		float volumeValue = (float) (20 * (Math.log10(volume * 0.01)));
+		return volumeValue;
 	}
 
-	public static String getSound() {
-		return soundStr;
-	}
-
-	public static long getMicrosecondPosition() {
+	public long getMicrosecondPosition() {
 		long timepos = clip.getMicrosecondPosition();
 		return timepos;
 	}
 
-	public static long getMicrosecondLength() {
+	public long getMicrosecondLength() {
 		long timelenght = clip.getMicrosecondLength();
 		return timelenght;
 	}
 
-	public static String getTimePosition() {
-		long milliseconds = (Sound.getMicrosecondPosition() / 1000) % 1000;
-		long seconds = (((Sound.getMicrosecondPosition() / 1000) - milliseconds) / 1000) % 60;
-		long minutes = (((((Sound.getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60;
-		long hours = ((((((Sound.getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60;
+	public String getTimePosition() {
+		long milliseconds = (getMicrosecondPosition() / 1000) % 1000;
+		long seconds = (((getMicrosecondPosition() / 1000) - milliseconds) / 1000) % 60;
+		long minutes = (((((getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60;
+		long hours = ((((((getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60;
 		String timePosH = null, timePosM = null, timePosS = null;
 
 		if (hours < 10)
@@ -104,11 +108,11 @@ public class Sound {
 		return timePosH + ":" + timePosM + ":" + timePosS;
 	}
 
-	public static String getTimeLength() {
-		long milliseconds = (Sound.getMicrosecondLength() / 1000) % 1000;
-		long seconds = (((Sound.getMicrosecondLength() / 1000) - milliseconds) / 1000) % 60;
-		long minutes = (((((Sound.getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60;
-		long hours = ((((((Sound.getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60;
+	public String getTimeLength() {
+		long milliseconds = (getMicrosecondLength() / 1000) % 1000;
+		long seconds = (((getMicrosecondLength() / 1000) - milliseconds) / 1000) % 60;
+		long minutes = (((((getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60;
+		long hours = ((((((getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60;
 		String timeLengthH = null, timeLengthM = null, timeLengthS = null;
 
 		if (hours < 10)
@@ -129,15 +133,15 @@ public class Sound {
 		return timeLengthH + ":" + timeLengthM + ":" + timeLengthS;
 	}
 
-	public static String getTimeRemaining() {
-		long milliseconds = ((Sound.getMicrosecondLength() / 1000) % 1000)
-				- ((Sound.getMicrosecondPosition() / 1000) % 1000);
-		long seconds = ((((Sound.getMicrosecondLength() / 1000) - milliseconds) / 1000) % 60)
-				- ((((Sound.getMicrosecondPosition() / 1000) - milliseconds) / 1000) % 60);
-		long minutes = ((((((Sound.getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60)
-				- ((((((Sound.getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60);
-		long hours = (((((((Sound.getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60)
-				- (((((((Sound.getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60);
+	public String getTimeRemaining() {
+		long milliseconds = ((getMicrosecondLength() / 1000) % 1000)
+				- ((getMicrosecondPosition() / 1000) % 1000);
+		long seconds = ((((getMicrosecondLength() / 1000) - milliseconds) / 1000) % 60)
+				- ((((getMicrosecondPosition() / 1000) - milliseconds) / 1000) % 60);
+		long minutes = ((((((getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60)
+				- ((((((getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) % 60);
+		long hours = (((((((getMicrosecondLength() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60)
+				- (((((((getMicrosecondPosition() / 1000) - milliseconds) / 1000) - seconds) / 60) - minutes) / 60);
 		String timeRemainingH = null, timeRemainingM = null, timeRemainingS = null;
 
 		if (hours < 10)
