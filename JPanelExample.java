@@ -10,7 +10,10 @@ public class JPanelExample extends JPanel implements ActionListener {
 	public static JSlider volume = new JSlider(0, 100);
 	public static JLabel timeLength = new JLabel(), timePos = new JLabel(),
 			timeRemaining = new JLabel();
-	Thread updateVolume, updateTimePos, updateTimeRemaining;
+	Thread updateTimePos, updateTimeRemaining;
+	Sound sound = new Sound(new File(
+			"C:/Users/Sioxox/Desktop/The EnderScrolls Minecraft/music.wav"),
+			volume);
 
 	public static void main(String[] args) throws Exception {
 		frame = new JFrame("Galkins - Sound");
@@ -64,7 +67,7 @@ public class JPanelExample extends JPanel implements ActionListener {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					timePos.setText(Sound.getTimePosition() + " / ");
+					timePos.setText(sound.getTimePosition() + " / ");
 				}
 			}
 		};
@@ -77,7 +80,7 @@ public class JPanelExample extends JPanel implements ActionListener {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					timeRemaining.setText(Sound.getTimeRemaining());
+					timeRemaining.setText(sound.getTimeRemaining());
 				}
 			}
 		};
@@ -92,12 +95,10 @@ public class JPanelExample extends JPanel implements ActionListener {
 		stop.setVisible(false);
 	}
 
-	@SuppressWarnings("deprecation")
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == play) {
 			try {
-				Sound.play(new URL("url/music.wav"), volume.getValue());
-				// Sound.play(new File("path/music.wav"), volume.getValue());
+				sound.playFile();
 			} catch (UnsupportedAudioFileException | IOException
 					| LineUnavailableException e1) {
 				e1.printStackTrace();
@@ -109,25 +110,13 @@ public class JPanelExample extends JPanel implements ActionListener {
 			pause.setVisible(true);
 			mute.setVisible(true);
 			stop.setVisible(true);
-			Sound.updateVolume(volume.getValue());
 
-			updateVolume = new Thread() {
-				public void run() {
-					while (true) {
-						Sound.updateVolume(volume.getValue());
-					}
-				}
-			};
-			updateVolume.start();
-			timeLength.setText(Sound.getTimeLength());
+			timeLength.setText(sound.getTimeLength());
 			updateTimePos.start();
 			updateTimeRemaining.start();
 		} else if (e.getSource() == stop) {
-			Sound.stop();
+			sound.stop();
 			play.setBounds(100, 60, 100, 35);
-			updateVolume.stop();
-			updateTimePos.stop();
-			updateTimeRemaining.stop();
 			pause.setVisible(false);
 			mute.setVisible(false);
 			demute.setVisible(false);
@@ -139,55 +128,44 @@ public class JPanelExample extends JPanel implements ActionListener {
 			play.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
-						Sound.play(new URL(Sound.getSound()), volume.getValue());
-						// Sound.play(new File(Sound.getSound()),
-						// volume.getValue());
+						sound.playFile();
 					} catch (UnsupportedAudioFileException | IOException
 							| LineUnavailableException e1) {
 						e1.printStackTrace();
 					}
+					play.setBounds(45, 60, 100, 35);
 					play.removeActionListener(this);
 
 					play.setVisible(false);
 					pause.setVisible(true);
 					mute.setVisible(true);
 					stop.setVisible(true);
-					Sound.updateVolume(volume.getValue());
-
-					updateVolume = new Thread() {
-						public void run() {
-							while (true) {
-								Sound.updateVolume(volume.getValue());
-							}
-						}
-					};
-					updateVolume.start();
-					timeLength.setText(Sound.getTimeLength());
-					updateTimePos.start();
-					updateTimeRemaining.start();
+					timeLength.setText(sound.getTimeLength());
+					/*
+					 * updateTimePos.resume(); updateTimeRemaining.resume();
+					 */
 				}
 			});
 		} else if (e.getSource() == pause) {
-			Sound.pause();
+			sound.pause();
 			pause.setVisible(false);
 			play.setVisible(true);
 			play.setEnabled(true);
 			play.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					play.removeActionListener(this);
-					Sound.resume(volume.getValue());
+					sound.resume();
 					play.removeActionListener(this);
 					play.setVisible(false);
 					pause.setVisible(true);
 				}
 			});
 		} else if (e.getSource() == mute) {
-			Sound.mute();
-			updateVolume.suspend();
+			sound.mute();
 			mute.setVisible(false);
 			demute.setVisible(true);
 		} else if (e.getSource() == demute) {
-			updateVolume.resume();
+			sound.demute();
 			mute.setVisible(true);
 			demute.setVisible(false);
 		}
