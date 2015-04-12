@@ -1,24 +1,39 @@
+package com.galkins.sound;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Objects;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
 public class Sound {
 
-	String sound;
-	float volume;
-	
+	private String sound;
+	private float volume;
+
 	Clip clip;
 	FloatControl control;
-	
+
 	public Sound(URL sound, int volumeValue) {
 		this.sound = sound.toString();
-		this.volume = (float)volumeValue;
-	}
-	
-	public Sound(File sound, int volumeValue) {
-		this.sound = sound.toString();
-		this.volume = (float)volumeValue;
+		this.volume = (float) volumeValue;
 	}
 
-	public void play()
-			throws MalformedURLException, UnsupportedAudioFileException,
-			IOException, LineUnavailableException {
+	public Sound(File sound, int volumeValue) {
+		this.sound = sound.toString();
+		this.volume = (float) volumeValue;
+	}
+
+	public void playURL() throws MalformedURLException,
+			UnsupportedAudioFileException, IOException,
+			LineUnavailableException {
 		AudioInputStream ais = AudioSystem.getAudioInputStream(new URL(sound));
 		clip = AudioSystem.getClip();
 
@@ -29,10 +44,10 @@ public class Sound {
 		clip.start();
 	}
 
-	public void play(File sound)
-			throws MalformedURLException, UnsupportedAudioFileException,
-			IOException, LineUnavailableException {
-		AudioInputStream ais = AudioSystem.getAudioInputStream(sound);
+	public void playFile() throws MalformedURLException,
+			UnsupportedAudioFileException, IOException,
+			LineUnavailableException {
+		AudioInputStream ais = AudioSystem.getAudioInputStream(new File(sound));
 		clip = AudioSystem.getClip();
 
 		clip.open(ais);
@@ -51,7 +66,6 @@ public class Sound {
 	}
 
 	public void resume() {
-		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
 		clip.start();
 	}
 
