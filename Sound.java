@@ -1,34 +1,25 @@
-package com.galkins.sound;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Objects;
-
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
 public class Sound {
 
 	private String sound;
 	private float volume;
+	private JSlider slider;
 
 	Clip clip;
 	FloatControl control;
+	Thread updateVolume;
 
-	public Sound(URL sound, int volumeValue) {
+	public Sound(URL sound, JSlider slider) {
 		this.sound = sound.toString();
-		this.volume = (float) volumeValue;
+		this.volume = setVolume(slider.getValue());
+		this.slider = slider;
+		System.out.println(slider.getValue());
 	}
 
-	public Sound(File sound, int volumeValue) {
+	public Sound(File sound, JSlider slider) {
 		this.sound = sound.toString();
-		this.volume = (float) volumeValue;
+		this.volume = setVolume(slider.getValue());
+		this.slider = slider;
+		System.out.println(slider.getValue());
 	}
 
 	public void playURL() throws MalformedURLException,
@@ -42,6 +33,9 @@ public class Sound {
 		control.setValue(getVolume());
 		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
 		clip.start();
+
+		updateVolume();
+		updateVolume.start();
 	}
 
 	public void playFile() throws MalformedURLException,
@@ -55,6 +49,9 @@ public class Sound {
 		control.setValue(getVolume());
 		clip.setMicrosecondPosition(clip.getMicrosecondPosition());
 		clip.start();
+
+		updateVolume();
+		updateVolume.start();
 	}
 
 	public void stop() {
@@ -69,22 +66,40 @@ public class Sound {
 		clip.start();
 	}
 
+	@SuppressWarnings("deprecation")
 	public void mute() {
+		updateVolume.suspend();
 		control.setValue(-80f);
 	}
 
-	public void updateVolume() {
-		try {
-			Thread.sleep(1);
-			control.setValue(getVolume());
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	@SuppressWarnings("deprecation")
+	public void demute() {
+		updateVolume.resume();
+	}
+
+	public float setVolume(int volumeValue) {
+		volume = (float) (20 * (Math.log10(volumeValue * 0.01)));
+		return volume;
 	}
 
 	public float getVolume() {
-		float volumeValue = (float) (20 * (Math.log10(volume * 0.01)));
-		return volumeValue;
+		return volume;
+	}
+
+	public float updateVolume() {
+		updateVolume = new Thread() {
+			public void run() {
+				while (true) {
+					control.setValue(setVolume(slider.getValue()));
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		return volume;
 	}
 
 	public long getMicrosecondPosition() {
