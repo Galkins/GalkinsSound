@@ -12,14 +12,12 @@ public class Sound {
 		this.sound = sound.toString();
 		this.volume = setVolume(slider.getValue());
 		this.slider = slider;
-		System.out.println(slider.getValue());
 	}
 
 	public Sound(File sound, JSlider slider) {
 		this.sound = sound.toString();
 		this.volume = setVolume(slider.getValue());
 		this.slider = slider;
-		System.out.println(slider.getValue());
 	}
 
 	public void playURL() throws MalformedURLException,
@@ -54,8 +52,10 @@ public class Sound {
 		updateVolume.start();
 	}
 
+	@SuppressWarnings("deprecation")
 	public void stop() {
 		clip.stop();
+		updateVolume.stop();
 	}
 
 	public void pause() {
