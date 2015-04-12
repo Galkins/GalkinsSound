@@ -1,3 +1,20 @@
+package com.galkins.sound;
+
+import java.awt.Color;
+import java.awt.FontFormatException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+
 public class JPanelExample extends JPanel implements ActionListener {
 
 	public static final long serialVersionUID = 1L;
@@ -126,6 +143,7 @@ public class JPanelExample extends JPanel implements ActionListener {
 			timeRemaining.setVisible(false);
 			play.setVisible(true);
 			play.addActionListener(new ActionListener() {
+				@SuppressWarnings("deprecation")
 				public void actionPerformed(ActionEvent e) {
 					try {
 						sound.playFile();
@@ -140,10 +158,14 @@ public class JPanelExample extends JPanel implements ActionListener {
 					pause.setVisible(true);
 					mute.setVisible(true);
 					stop.setVisible(true);
+					mute.setEnabled(true);
+					demute.setEnabled(true);
 					timeLength.setText(sound.getTimeLength());
-					/*
-					 * updateTimePos.resume(); updateTimeRemaining.resume();
-					 */
+					updateTimePos.resume();
+					updateTimeRemaining.resume();
+					timeLength.setVisible(true);
+					timePos.setVisible(true);
+					timeRemaining.setVisible(true);
 				}
 			});
 		} else if (e.getSource() == pause) {
